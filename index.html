@@ -1,27 +1,141 @@
-<!DOCTYPE html>
-<html lang="fr">
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Table of Elements</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f0f0f0;
-            padding: 20px;
-        }
-        h1 {
-            color: #2c3e50;
-        }
-        p {
-            font-size: 18px;
-            color: #555;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Periodic Codex – First Letters → Symbol</title>
+  <style>
+    :root{--bg:#0c2a43;--panel:#2c3650;--ink:#fff;--muted:#aab;--field:#1e2436;--border:#667}
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);display:flex;align-items:center;justify-content:center;padding:24px}
+    .panel{width:100%;max-width:520px;background:var(--panel);padding:24px 28px;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+    h1{margin:0 0 10px;font-size:22px}
+    label{display:block;margin:12px 0 6px;font-size:14px;color:#dbe}
+    .note{font-size:12px;color:#dbe;opacity:.85;margin:2px 0 4px}
+    input{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--field);color:var(--ink);outline:none}
+    .row{display:flex;gap:12px}
+    .row > div{flex:1}
+    .btns{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+    button{padding:10px 14px;border:0;border-radius:8px;cursor:pointer;background:#3a7bd5;color:#fff}
+    button.secondary{background:#46536f}
+    .hint{margin-top:8px;color:var(--muted);font-size:12px}
+    .result{margin-top:16px;font-weight:700;font-size:18px}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace}
+    footer{margin-top:18px;color:var(--muted);font-size:12px}
+  </style>
 </head>
 <body>
-    <h1>Table of Elements</h1>
-    <p>Code open the labs door 3 numbers</p>
+  <div class="panel">
+    <h1>Find Atomic Number</h1>
+    <div class="row">
+      <div>
+        <div class="note">Screen #1 is beside Deadshot Daiquiri</div>
+        <label>First word</label>
+        <input id="w1" type="text" placeholder="ex. Potatoes" oninput="lookup()">
+      </div>
+      <div>
+        <div class="note">2nd is behind Richtofen’s family clones</div>
+        <label>Second word</label>
+        <input id="w2" type="text" placeholder="ex. Universe" oninput="lookup()">
+      </div>
+    </div>
+    <div class="btns">
+      <button onclick="lookup()">Search</button>
+      <button class="secondary" onclick="clearAll()">Clear</button>
+      <button class="secondary" onclick="copySymbol()">Copy symbol</button>
+    </div>
+    <div class="hint">Uses only the first letter of each word. Leave second empty to test 1-letter symbols (H, B, C, N, O, F, P, S, K, V, W, Y, I, U).</div>
+    <div id="out" class="result mono"></div>
+    <footer>FR/EN names included • Works offline • Single HTML file</footer>
+  </div>
+
+  <script>
+    const ELEMENTS = {
+      h:{number:1,en:"Hydrogen",fr:"Hydrogène"}, he:{number:2,en:"Helium",fr:"Hélium"},
+      li:{number:3,en:"Lithium",fr:"Lithium"}, be:{number:4,en:"Beryllium",fr:"Béryllium"},
+      b:{number:5,en:"Boron",fr:"Bore"}, c:{number:6,en:"Carbon",fr:"Carbone"},
+      n:{number:7,en:"Nitrogen",fr:"Azote"}, o:{number:8,en:"Oxygen",fr:"Oxygène"},
+      f:{number:9,en:"Fluorine",fr:"Fluor"}, ne:{number:10,en:"Neon",fr:"Néon"},
+      na:{number:11,en:"Sodium",fr:"Sodium"}, mg:{number:12,en:"Magnesium",fr:"Magnésium"},
+      al:{number:13,en:"Aluminum",fr:"Aluminium"}, si:{number:14,en:"Silicon",fr:"Silicium"},
+      p:{number:15,en:"Phosphorus",fr:"Phosphore"}, s:{number:16,en:"Sulfur",fr:"Soufre"},
+      cl:{number:17,en:"Chlorine",fr:"Chlore"}, ar:{number:18,en:"Argon",fr:"Argon"},
+      k:{number:19,en:"Potassium",fr:"Potassium"}, ca:{number:20,en:"Calcium",fr:"Calcium"},
+      sc:{number:21,en:"Scandium",fr:"Scandium"}, ti:{number:22,en:"Titanium",fr:"Titane"},
+      v:{number:23,en:"Vanadium",fr:"Vanadium"}, cr:{number:24,en:"Chromium",fr:"Chrome"},
+      mn:{number:25,en:"Manganese",fr:"Manganèse"}, fe:{number:26,en:"Iron",fr:"Fer"},
+      co:{number:27,en:"Cobalt",fr:"Cobalt"}, ni:{number:28,en:"Nickel",fr:"Nickel"},
+      cu:{number:29,en:"Copper",fr:"Cuivre"}, zn:{number:30,en:"Zinc",fr:"Zinc"},
+      ga:{number:31,en:"Gallium",fr:"Gallium"}, ge:{number:32,en:"Germanium",fr:"Germanium"},
+      as:{number:33,en:"Arsenic",fr:"Arsenic"}, se:{number:34,en:"Selenium",fr:"Sélénium"},
+      br:{number:35,en:"Bromine",fr:"Brome"}, kr:{number:36,en:"Krypton",fr:"Krypton"},
+      rb:{number:37,en:"Rubidium",fr:"Rubidium"}, sr:{number:38,en:"Strontium",fr:"Strontium"},
+      y:{number:39,en:"Yttrium",fr:"Yttrium"}, zr:{number:40,en:"Zirconium",fr:"Zirconium"},
+      nb:{number:41,en:"Niobium",fr:"Niobium"}, mo:{number:42,en:"Molybdenum",fr:"Molybdène"},
+      tc:{number:43,en:"Technetium",fr:"Technétium"}, ru:{number:44,en:"Ruthenium",fr:"Ruthénium"},
+      rh:{number:45,en:"Rhodium",fr:"Rhodium"}, pd:{number:46,en:"Palladium",fr:"Palladium"},
+      ag:{number:47,en:"Silver",fr:"Argent"}, cd:{number:48,en:"Cadmium",fr:"Cadmium"},
+      in:{number:49,en:"Indium",fr:"Indium"}, sn:{number:50,en:"Tin",fr:"Étain"},
+      sb:{number:51,en:"Antimony",fr:"Antimoine"}, te:{number:52,en:"Tellurium",fr:"Tellure"},
+      i:{number:53,en:"Iodine",fr:"Iode"}, xe:{number:54,en:"Xenon",fr:"Xénon"},
+      cs:{number:55,en:"Cesium",fr:"Césium"}, ba:{number:56,en:"Barium",fr:"Baryum"},
+      la:{number:57,en:"Lanthanum",fr:"Lanthane"}, ce:{number:58,en:"Cerium",fr:"Cérium"},
+      pr:{number:59,en:"Praseodymium",fr:"Praséodyme"}, nd:{number:60,en:"Neodymium",fr:"Néodyme"},
+      pm:{number:61,en:"Promethium",fr:"Prométhium"}, sm:{number:62,en:"Samarium",fr:"Samarium"},
+      eu:{number:63,en:"Europium",fr:"Europium"}, gd:{number:64,en:"Gadolinium",fr:"Gadolinium"},
+      tb:{number:65,en:"Terbium",fr:"Terbium"}, dy:{number:66,en:"Dysprosium",fr:"Dysprosium"},
+      ho:{number:67,en:"Holmium",fr:"Holmium"}, er:{number:68,en:"Erbium",fr:"Erbium"},
+      tm:{number:69,en:"Thulium",fr:"Thulium"}, yb:{number:70,en:"Ytterbium",fr:"Ytterbium"},
+      lu:{number:71,en:"Lutetium",fr:"Lutécium"}, hf:{number:72,en:"Hafnium",fr:"Hafnium"},
+      ta:{number:73,en:"Tantalum",fr:"Tantale"}, w:{number:74,en:"Tungsten",fr:"Tungstène"},
+      re:{number:75,en:"Rhenium",fr:"Rhénium"}, os:{number:76,en:"Osmium",fr:"Osmium"},
+      ir:{number:77,en:"Iridium",fr:"Iridium"}, pt:{number:78,en:"Platinum",fr:"Platine"},
+      au:{number:79,en:"Gold",fr:"Or"}, hg:{number:80,en:"Mercury",fr:"Mercure"},
+      tl:{number:81,en:"Thallium",fr:"Thallium"}, pb:{number:82,en:"Lead",fr:"Plomb"},
+      bi:{number:83,en:"Bismuth",fr:"Bismuth"}, po:{number:84,en:"Polonium",fr:"Polonium"},
+      at:{number:85,en:"Astatine",fr:"Astate"}, rn:{number:86,en:"Radon",fr:"Radon"},
+      fr:{number:87,en:"Francium",fr:"Francium"}, ra:{number:88,en:"Radium",fr:"Radium"},
+      ac:{number:89,en:"Actinium",fr:"Actinium"}, th:{number:90,en:"Thorium",fr:"Thorium"},
+      pa:{number:91,en:"Protactinium",fr:"Protactinium"}, u:{number:92,en:"Uranium",fr:"Uranium"},
+      np:{number:93,en:"Neptunium",fr:"Neptunium"}, pu:{number:94,en:"Plutonium",fr:"Plutonium"},
+      am:{number:95,en:"Americium",fr:"Américium"}, cm:{number:96,en:"Curium",fr:"Curium"},
+      bk:{number:97,en:"Berkelium",fr:"Berkélium"}, cf:{number:98,en:"Californium",fr:"Californium"},
+      es:{number:99,en:"Einsteinium",fr:"Einsteinium"}, fm:{number:100,en:"Fermium",fr:"Fermium"},
+      md:{number:101,en:"Mendelevium",fr:"Mendélévium"}, no:{number:102,en:"Nobelium",fr:"Nobélium"},
+      lr:{number:103,en:"Lawrencium",fr:"Laurencium"}, rf:{number:104,en:"Rutherfordium",fr:"Rutherfordium"},
+      db:{number:105,en:"Dubnium",fr:"Dubnium"}, sg:{number:106,en:"Seaborgium",fr:"Seaborgium"},
+      bh:{number:107,en:"Bohrium",fr:"Bohrium"}, hs:{number:108,en:"Hassium",fr:"Hassium"},
+      mt:{number:109,en:"Meitnerium",fr:"Meitnérium"}, ds:{number:110,en:"Darmstadtium",fr:"Darmstadtium"},
+      rg:{number:111,en:"Roentgenium",fr:"Roentgenium"}, cn:{number:112,en:"Copernicium",fr:"Copernicium"},
+      nh:{number:113,en:"Nihonium",fr:"Nihonium"}, fl:{number:114,en:"Flerovium",fr:"Flérovium"},
+      mc:{number:115,en:"Moscovium",fr:"Moscovium"}, lv:{number:116,en:"Livermorium",fr:"Livermorium"},
+      ts:{number:117,en:"Tennessine",fr:"Tennesse"}, og:{number:118,en:"Oganesson",fr:"Oganesson"}
+    };
+
+    function formatSym(code){ return code[0].toUpperCase() + (code[1] ? code[1].toLowerCase() : ""); }
+    function lookup(){
+      const w1 = document.getElementById('w1').value.trim();
+      const w2 = document.getElementById('w2').value.trim();
+      const out = document.getElementById('out');
+      if (!w1 && !w2){ out.textContent=""; return; }
+      let code = w1 && !w2 ? w1[0].toLowerCase() : (w1[0] + (w2[0]||"")).toLowerCase();
+      const data = ELEMENTS[code];
+      if (data){
+        out.textContent = `${formatSym(code)} → ${String(data.number).padStart(3,'0')}  (${data.fr} / ${data.en})`;
+        out.setAttribute('data-symbol', formatSym(code));
+      } else {
+        out.textContent = `No element for ${code.toUpperCase()}`;
+        out.removeAttribute('data-symbol');
+      }
+    }
+    function clearAll(){ document.getElementById('w1').value=""; document.getElementById('w2').value=""; document.getElementById('out').textContent=""; document.getElementById('out').removeAttribute('data-symbol'); }
+    function copySymbol(){
+      const out = document.getElementById('out');
+      const sym = out.getAttribute('data-symbol');
+      if (!sym) return;
+      navigator.clipboard.writeText(sym).then(()=>{ out.textContent += "  (copied)"; });
+    }
+  </script>
 </body>
 </html>
